@@ -60,3 +60,39 @@ export function formatTemplate(template: string, values: Record<string, IStringe
     return String(value);
   });
 }
+
+export async function getJSON<T = any>(
+  url: string,
+  headers?: Record<string, any>
+): Promise<{ headers: Record<string, string>; status: number; data: T }> {
+  const result = await fetch(url, {
+    method: 'GET',
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json;charset=UTF-8',
+    },
+  });
+
+  const responseHeaders: Record<string, string> = {};
+
+  for (const [key, value] of result.headers.entries()) {
+    responseHeaders[key] = value;
+  }
+
+  const data = await result.json();
+
+  return { headers: responseHeaders, status: result.status, data: data };
+}
+
+export function toQueryString(params: Record<string, any>) {
+  const entries = Object.entries(params);
+
+  if (entries.length === 0) {
+    return '';
+  }
+
+  return entries.reduce((query, [k, v]) => {
+    const encoded = `${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
+    return query.length === 0 ? `?${encoded}` : `${query}&${encoded}`;
+  }, '');
+}
